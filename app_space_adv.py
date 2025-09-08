@@ -7,6 +7,27 @@ from typing import Union, Dict, Any
 
 # 1) ページ設定（必ず最上段）
 st.set_page_config(page_title="宇宙船脱出 / Spaceship Escape", layout="centered")
+# 動画をブロック表示＆下に余白（縦に：動画 → テキスト）
+st.markdown("""
+<style>
+/* Streamlitの動画を常にブロック要素として扱い、下に余白をとる */
+.stVideo video, video {
+  display: block !important;
+  width: 100% !important;
+  height: auto !important;
+  margin: 0 0 16px 0 !important;
+}
+
+/* 画像も同様に（任意） */
+.stImage img {
+  display: block !important;
+  width: 100% !important;
+  height: auto !important;
+  margin: 0 0 16px 0 !important;
+}
+</style>
+""", unsafe_allow_html=True)
+
 
 # 2) CSS（角丸ゼロ／重なり防止／上端欠け・スマホ余白対策）
 st.markdown("""
