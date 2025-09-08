@@ -1,36 +1,50 @@
-# app.py — 修正版（動画→テキストを縦並びに確実化）
+# app.py — Stable (components.html) / Low-Flicker / PC・スマホ最適化
 import streamlit as st
 import streamlit.components.v1 as components
-import json, re, base64, html, os, time
+import json, re, base64, time
 from pathlib import Path
 from typing import Union, Dict, Any
 
-# 1) ページ設定
+# -----------------------------
+# ページ設定
+# -----------------------------
 st.set_page_config(page_title="宇宙船脱出 / Spaceship Escape", layout="centered")
 
-# 2) 共通CSS：動画と画像は必ずブロック要素＋下に余白
+# -----------------------------
+# CSS（PCとスマホで高さ/余白最適化、画像/動画の表示統一）
+# -----------------------------
 st.markdown("""
 <style>
-video, .stVideo video {
-  display: block !important;
-  width: 100% !important;
-  height: auto !important;
-  margin: 0 0 20px 0 !important;
+/* 画像は常にブロック要素＋統一余白 */
+.stImage img{
+  display:block !important;
+  width:100% !important;
+  height:auto !important;
+  margin:0 0 12px 0 !important;
+  border-radius:0 !important;
+  background:#000;
 }
-.stImage img {
-  display: block !important;
-  width: 100% !important;
-  height: auto !important;
-  margin: 0 0 20px 0 !important;
+
+/* テキスト段落の上下余白を控えめに（スマホはさらに詰める） */
+.stMarkdown p{ margin:.35rem 0 !important; }
+@media (max-width:480px){
+  .stMarkdown p{ margin:.25rem 0 !important; }
 }
-.stMarkdown p {
-  margin-top: 0.4rem !important;
-  margin-bottom: 0.4rem !important;
+
+/* components.html が作る iframe をスマホだけ低めに＆下余白を詰める */
+@media (max-width:480px){
+  iframe[title="streamlit_component.html"]{
+    height:220px !important;          /* ← 端末に応じて 220〜260 で微調整可 */
+    margin-bottom:6px !important;
+    display:block !important;
+  }
 }
 </style>
 """, unsafe_allow_html=True)
 
-# 3) 物語データ
+# -----------------------------
+# ストーリーデータ
+# -----------------------------
 def load_story(lang: str) -> Dict[str, Any]:
     p = Path("story_space_adv_en.json" if lang == "en" else "story_space_adv_jp.json")
     if not p.exists():
@@ -39,16 +53,18 @@ def load_story(lang: str) -> Dict[str, Any]:
             "chapters": {
                 "1": {
                     "text": "Dummy chapter. Please prepare JSON.",
-                    "image": "assets/img_start.png",
+                    "video": "assets/sample.mp4",
                     "choices": [
-                        {"text": "▶ Next", "result": {"text": "End", "next": "1", "lp": 0}, "correct": True}
+                        {"text": "▶次へ/Next", "result": {"text": "End", "next": "1", "lp": 0}, "correct": True}
                     ]
                 }
             }
         }
     return json.loads(p.read_text(encoding="utf-8"))
 
-# 4) セッション関連
+# -----------------------------
+# セッション初期化 / ヘルパー
+# -----------------------------
 def init_session():
     defaults = {
         "chapter": "start",
@@ -58,7 +74,7 @@ def init_session():
         "player_name": "",
         "lang": "ja",
         "lp_updated": False,
-        "vid_seq": 0,
+        "vid_seq": 0,   # 連番（video要素のid用）
     }
     for k, v in defaults.items():
         if k not in st.session_state:
@@ -72,78 +88,93 @@ def ensure_asset(path: str) -> Path:
     if not (str(p).startswith("assets/") or str(p).startswith("./assets/")):
         p = Path("assets") / p
     return p
-# --- 固定の動画プレースホルダ（ちらつき対策：常に同じ場所に上書き） ---
-VIDEO_ZONE = st.empty()
 
-# --- 動画のbase64をキャッシュ（I/O待ちでの一瞬の空白を減らす） ---
-@st.cache_data(show_spinner=False)
-def _load_b64_video(p: Path) -> str:
-    return base64.b64encode(p.read_bytes()).decode("utf-8")
+# -----------------------------
+# 動画描画（components.html, PC高さ=360px）
+# -----------------------------
+def render_video(path: str, *, autoplay=True, muted=True, loop=False, controls=False, height_pc:int=360):
+    st.session_state.vid_seq += 1
+    vid_id = f"v{st.session_state.vid_seq}"
 
-
-# 5) メディア描画
-def render_video(path: str, *, autoplay=True, muted=True, loop=False, controls=False):
     p = ensure_asset(path)
     if not p.exists():
         st.warning(f"Video not found: {p}")
         return
 
-    # 読み込みをキャッシュ
-    b64 = _load_b64_video(p)
+    b64 = base64.b64encode(p.read_bytes()).decode("utf-8")
 
     attrs = []
     if autoplay: attrs.append("autoplay")
     if muted:    attrs.append("muted")
     if loop:     attrs.append("loop")
     if controls: attrs.append("controls")
-    attrs.append("playsinline")  # モバイル自動再生安定化
+    attrs.append("playsinline")
     attr_str = " ".join(attrs)
 
-    # iframeの高さを固定（ここを変えずに）＋同じ場所に上書き描画
+    # NOTE:
+    # - PCは height_pc で欠けない高さを確保（360推奨）
+    # - スマホは上のCSSで iframe 高さを 230px に上書き（ブランク縮小）
     html_code = f"""
     <div style="width:100%;height:100%;background:#000;">
-      <video {attr_str} preload="auto"
+      <video id="{vid_id}" {attr_str} preload="auto"
              style="display:block;width:100%;height:100%;object-fit:contain;background:#000;">
         <source src="data:video/mp4;base64,{b64}" type="video/mp4">
       </video>
     </div>
     """
-    # 重要：毎回同じ「動画ゾーン」に入れる → 上下が詰まらずテキストがせり上がらない
-    VIDEO_ZONE.empty()  # 前のiframeを消す
-    with VIDEO_ZONE.container():
-        components.html(html_code, height=240, scrolling=False)
+    components.html(html_code, height=height_pc, scrolling=False)
 
-
+# -----------------------------
+# メディア描画（文字列/辞書どちらにも対応）
+# -----------------------------
 def render_media(spec: Union[str, Dict[str, Any]]):
-    if spec is None:
+    if not spec:
         return
+
     if isinstance(spec, str):
-        st.image(ensure_asset(spec), use_container_width=True)
+        p = ensure_asset(spec)
+        if str(p).lower().endswith(".mp4"):   # 文字列でも .mp4 なら動画扱い
+            render_video(str(p))
+        else:
+            st.image(p, use_container_width=True)
         return
-    mtype = spec.get("type", "image")
-    file = spec.get("file")
+
+    # 辞書形式
+    mtype = (spec.get("type") or "").lower()
+    file  = spec.get("file")
+    if not file:
+        # "video": "...", "image": "..." 形式にも対応
+        if isinstance(spec.get("video"), str): mtype, file = "video", spec["video"]
+        elif isinstance(spec.get("image"), str): mtype, file = "image", spec["image"]
     if not file:
         return
-    if mtype == "video":
-        render_video(file,
-                     autoplay=bool(spec.get("autoplay", True)),
-                     muted=bool(spec.get("muted", True)),
-                     loop=bool(spec.get("loop", False)),
-                     controls=bool(spec.get("controls", False)))
+
+    if mtype == "video" or str(file).lower().endswith(".mp4"):
+        render_video(
+            file,
+            autoplay=bool(spec.get("autoplay", True)),
+            muted=bool(spec.get("muted", True)),
+            loop=bool(spec.get("loop", False)),
+            controls=bool(spec.get("controls", False)),
+        )
     else:
         st.image(ensure_asset(file), use_container_width=True)
 
 def render_chapter_media(chapter: Dict[str, Any]):
-    spec = chapter.get("media") or chapter.get("image")
+    # media > video > image の順で評価
+    spec = chapter.get("media") or chapter.get("video") or chapter.get("image")
     render_media(spec)
 
 def render_result_media(chapter: Dict[str, Any], result_data: Dict[str, Any]):
+    # result_* > choice_* > video > image
     spec = (result_data.get("result_media") or result_data.get("result_image")
             or chapter.get("choice_media") or chapter.get("choice_image")
-            or chapter.get("image"))
+            or chapter.get("video") or chapter.get("image"))
     render_media(spec)
 
-# 6) ナビゲーション
+# -----------------------------
+# ナビゲーション
+# -----------------------------
 def go_next_chapter(next_key: str):
     st.session_state.update({
         "chapter": str(next_key),
@@ -158,25 +189,30 @@ def choose_index(i: int):
 def start_game():
     st.session_state.update({"chapter": "1", "lp": 90, "lp_updated": False})
 
-# 7) メイン処理
+# -----------------------------
+# メイン
+# -----------------------------
 def main():
     init_session()
     story = load_story(st.session_state.lang)
 
+    # Start
     if st.session_state.chapter == "start":
-        lang_map = {"日本語": "ja", "English": "en"}
-        st.session_state.lang = lang_map[st.radio("🌐 Language / 言語", ("日本語", "English"), index=0)]
+        lang_map = {"日本語":"ja","English":"en"}
+        st.session_state.lang = lang_map[st.radio("🌐 Language / 言語", ("日本語","English"), index=0)]
         st.image("assets/img_start.png", use_container_width=True)
         st.markdown("## 宇宙船脱出 / Spaceship Escape")
         st.button("▶ ゲームを始める / Game start", on_click=start_game)
-        st.markdown(personalize(story.get("intro_text", "")))
+        st.markdown(personalize(story.get("intro_text","")))
         return
 
+    # Chapter
     chapter = story["chapters"].get(st.session_state.chapter)
     if not chapter:
         st.error("章データが見つかりません")
         return
 
+    # Game over
     if st.session_state.lp <= 0:
         st.markdown("### 💀 Game Over")
         st.image("assets/img_gameover.png", use_container_width=True)
@@ -186,30 +222,41 @@ def main():
             init_session()
         return
 
+    # Result
     if st.session_state.show_result and st.session_state.selected is not None:
         choice = chapter["choices"][st.session_state.selected]
         result_data = choice["result"]
+
         if not st.session_state.lp_updated:
             st.session_state.lp = max(0, st.session_state.lp + result_data.get("lp", 0))
             st.session_state.lp_updated = True
+
         render_result_media(chapter, result_data)
+
         if int(st.session_state.chapter) >= 7:
             st.markdown(f"⏳ Time Left: {st.session_state.lp} min")
-        st.markdown(personalize(result_data.get("text", "")))
+
+        st.markdown(personalize(result_data.get("text","")))
+
         if choice.get("correct", False):
-            st.button(result_data.get("button_label_n", "▶ Next"),
+            st.button("▶次へ/Next",
                       on_click=go_next_chapter,
-                      args=(str(result_data.get("next", "end")),))
+                      args=(str(result_data.get("next","end")),))
         else:
             st.button("▶ Choose Again",
-                      on_click=lambda: st.session_state.update({"show_result": False, "selected": None, "lp_updated": False}))
+                      on_click=lambda: st.session_state.update(
+                          {"show_result": False, "selected": None, "lp_updated": False}
+                      ))
         return
 
-    # 通常の章
+    # Normal chapter
     render_chapter_media(chapter)
+
     if int(st.session_state.chapter) >= 7:
         st.markdown(f"⏳ Time Left: {st.session_state.lp} min")
-    st.markdown(personalize(chapter.get("text", "")))
+
+    st.markdown(personalize(chapter.get("text","")))
+
     choices = chapter.get("choices") or []
     if not choices:
         st.markdown("🎉 Congratulations! Game Clear! 🎉")
@@ -220,6 +267,7 @@ def main():
                 del st.session_state[k]
             st.rerun()
         return
+
     for i, c in enumerate(choices):
         st.button(personalize(c["text"]), key=f"choice_{i}", on_click=choose_index, args=(i,))
 
