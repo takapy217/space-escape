@@ -39,7 +39,7 @@
       ]
     },
     "3": {
-      "image": "10.png",
+      "image": "10-1.png",
        "text": "Beside the hangar is the medical bay, but the power is down and the door won’t open. There’s no sign of the crew.",
 
       "choices": [
@@ -255,7 +255,7 @@
       ]
     },
     "10": {
-      "image": "10.png",
+      "image": "10-1.png",
       "text": "You arrive at the medical bay, but the door is sealed.",
       "choices": [
         {
@@ -263,7 +263,7 @@
 
           "correct": false,
           "result": {
-            "result_image": "10.png",
+            "result_image": "10-1.png",
             "text": "A label beside the door reads: \"Emergency Escape Pod.\" If you can enter the medical bay, you might escape.",
             "lp": -5,
             "next": "10"
@@ -273,7 +273,7 @@
           "text": "Force the door open",
           "correct": false,
           "result": {
-            "result_image": "10.png",
+            "result_image": "10-1.png",
             "text": "You: \"Suuuuuuuu… POWEEEEEER!!\"\n\n…It doesn’t budge.",
             "lp": -5,
             "next": "10"
@@ -283,7 +283,7 @@
            "text": "Move on",
           "correct": true,
           "result": {
-            "result_image": "10.png",
+            "result_image": "10-1.png",
             "text": "You decide to head to another section.",
             "lp": -5,
             "next": "11"
@@ -410,7 +410,7 @@
           "text": "Head to the medical bay",
           "correct": true,
           "result": {
-            "result_image": "10.png",
+            "result_image": "10-1.png",
             "text": "You arrive at the medical bay. Time to go inside.",
             "lp": -5,
             "next": "16"
