@@ -36,14 +36,14 @@
       ]
     },
     "3": {
-      "image": { "type": "video", "file": "3-1.mp4", "autoplay": true, "muted": true, "loop": false, "controls": false },
+      "image": "10.png",
       "text": "格納庫の横は医療室。ここの電源が止まっているようで扉は開かない。ただし、乗組員の気配は感じられない。",
       "choices": [
         {
           "text": "移動する",
           "correct": true,
           "result": {
-            "result_image": { "type": "video", "file": "3-2.mp4", "autoplay": true, "muted": true, "loop": false, "controls": false },
+            "result_image": "4.png",
             "text": "貨物船のコックピット。計器は壊れかけ、照明も不安定だ。",
             "lp": 0,
             "next": "4"
@@ -179,7 +179,7 @@
           "text": "机上のノートを調べる",
           "correct": false,
           "result": {
-            "result_image":  { "type": "video", "file": "8-1.mp4", "autoplay": true, "muted": true, "loop": false, "controls": false },
+            "result_image": "8.png",
             "text": "「宇宙歴20XX年10月30日、惑星R2からの放射線が予定値より高く航路を変更する。次の輸送地で調整すれば日程は問題なさそうだ。\n\n宇宙歴20XX年12月10日、今日は私の52回目の誕生日を乗組員に祝ってもらった」\n\nどうやら艦長の日記のようだ。",
             "lp": -5,
             "next": "8"
@@ -252,7 +252,7 @@
           "correct": false,
           "result": {
             "result_image": "10.png",
-            "text": "あなた「すぅぅぅぅーーーー。パワーーーー！！」\n\n開かない…",
+            "text": "あなた「すぅぅぅぅーーーー。\n\nパワーーーー！！」\n\n開かない…",
             "lp": -5,
             "next": "10"
           }
@@ -511,7 +511,7 @@
       ]
     },
     "20": {
-      "image": { "type": "video", "file": "ending.mp4", "autoplay": true, "muted": true, "loop": false,"controls": false },
+      "image": "20.png",
       "text": "救助信号は連邦に届いた。あなたは生還し、ゾーラ星人の陰謀も阻止された。後日、乗組員全員の無事が確認された。",
 
       "button_label_c": "▶終わり / END",

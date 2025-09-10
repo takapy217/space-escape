@@ -14,13 +14,12 @@ st.set_page_config(page_title="宇宙船脱出 / Spaceship Escape", layout="cent
 # -----------------------------
 DEVICE_PROFILES: Dict[str, Dict[str, Any]] = {
     # 推奨：多端末で安定（ブランク最小）
-    "Auto (Aspect)": {"mode": "aspect", "ratio": (16, 9), "height": None},
     # 応急：固定高さ（端末ごとに最適値へ微調整）
-    "iPhone SE (縦)": {"mode": "fixed", "height": 200},
+    "iPhone SE (Portrait)": {"mode": "fixed", "height": 200},
     "Small Phone":   {"mode": "fixed", "height": 216},
-    "Standard Phone":{"mode": "fixed", "height": 240},
-    "Tablet":        {"mode": "fixed", "height": 320},
+    "Tablet":        {"mode": "fixed", "height": 400},
     "Desktop":       {"mode": "fixed", "height": 360},
+    "Standard Phone":{"mode": "fixed", "height": 240},
 }
 
 # -----------------------------
@@ -35,7 +34,7 @@ st.markdown(
 
 /* 段落の行間を軽く詰める */
 .stMarkdown p{ margin:.35rem 0 !important; }
-@media (max-width:480px){ .stMarkdown p{ margin:.28rem 0 !important; } }
+@media (max-width:480px){ .stMarkdown p{ margin:.28 rem 0 !important; } }
 
 /* 画像は角丸OFF＋統一余白 */
 .stImage img{
@@ -44,7 +43,7 @@ st.markdown(
 }
 
 /* ボタンの余白も詰め気味に */
-.stButton>button{ margin-top:.25rem !important; margin-bottom:.25rem !important; }
+.stButton>button{ margin-top:.10rem !important; margin-bottom:.10rem !important; }
 
 /* （フェードイン用）動画は初期非表示→読み込み完了でふわっと表示 */
 .lowflicker-video{
@@ -130,7 +129,7 @@ def init_session():
         "lang": "jp",  # 既定は日本語（実ファイルに合わせて jp）
         "lp_updated": False,
         "vid_seq": 0,   # 連番（video要素のid用）
-        "device_profile": "Auto (Aspect)",  # 端末プロファイル
+        "device_profile": "Standard Phone",  # 端末プロファイル
     }
     for k, v in defaults.items():
         if k not in st.session_state:
@@ -317,7 +316,7 @@ def main():
         # 言語選択（ラベル短縮＆縦並び）
         lang_map = {"日本語": "jp", "English": "en"}
         selected_lang = st.radio(
-            "Language",
+            "      ",
             ("日本語", "English"),
             index=0 if st.session_state.get("lang", "jp") == "jp" else 1,
             horizontal=False,
@@ -410,7 +409,7 @@ def main():
         st.markdown("🎉 Congratulations! Game Clear! 🎉")
         if st.button("🔙 Back to Start"):
             st.balloons()
-            time.sleep(0.8)
+            time.sleep(2)
             for k in list(st.session_state.keys()):
                 del st.session_state[k]
             st.rerun()

@@ -39,7 +39,7 @@
       ]
     },
     "3": {
-      "image": { "type": "video", "file": "3-1.mp4", "autoplay": true, "muted": true, "loop": false, "controls": false },
+      "image": "10.png",
        "text": "Beside the hangar is the medical bay, but the power is down and the door won’t open. There’s no sign of the crew.",
 
       "choices": [
@@ -48,7 +48,7 @@
 
           "correct": true,
           "result": {
-            "result_image": { "type": "video", "file": "3-2.mp4", "autoplay": true, "muted": true, "loop": false, "controls": false },
+             "result_image": "4.png",
             "text": "The cargo ship’s cockpit. The instruments are failing and the lights flicker weakly.",
 
             "lp": 0,
@@ -194,7 +194,7 @@
           "text": "Check the notebook on the desk",
           "correct": false,
           "result": {
-            "result_image":  { "type": "video", "file": "8-1.mp4", "autoplay": true, "muted": true, "loop": false, "controls": false },
+            "result_image": "8.png",
             "text": "\"Stardate 20XX-10-30: Radiation from planet R2 exceeded projections. Changing course. With adjustments at the next stop, the schedule should be fine.\n\nStardate 20XX-12-10: The crew celebrated my 52nd birthday today.\"\n\nLooks like the captain’s diary.",
 
             "lp": -5,
@@ -535,7 +535,7 @@
       ]
     },
     "20": {
-      "image": { "type": "video", "file": "ending.mp4", "autoplay": true, "muted": true, "loop": false,"controls": false },
+      "image": "20.png",
       "text": "Your distress signal reaches the Federation. You survive, and the Zora plot is foiled. Later, all crew members are confirmed safe.",
       "button_label_c": "▶終わり / END",
       "choices": []
