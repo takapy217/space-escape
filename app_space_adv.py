@@ -18,7 +18,7 @@ DEVICE_PROFILES: Dict[str, Dict[str, Any]] = {
     "iPhone SE (Portrait)": {"mode": "fixed", "height": 200},
     "Small Phone":   {"mode": "fixed", "height": 216},
     "Tablet":        {"mode": "fixed", "height": 400},
-    "Desktop":       {"mode": "fixed", "height": 360},
+    "Desktop":       {"mode": "fixed", "height": 400},
     "Standard Phone":{"mode": "fixed", "height": 240},
 }
 
